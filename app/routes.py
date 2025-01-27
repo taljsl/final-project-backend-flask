@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, make_response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from . import create_app
 from .models import User, Room, Message
@@ -6,8 +6,17 @@ from .models import User, Room, Message
 app = create_app()
 jwt = JWTManager(app)
 
-@app.route('/api/users/register/', methods=['POST'])
+@app.route('/api/users/register/', methods=['POST', 'OPTIONS'])
 def register_user():
+    if request.method == 'OPTIONS':
+        # Handle preflight request
+        response = make_response(jsonify({"message": "CORS preflight passed"}), 200)
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        return response
+
+    # Handle actual POST request
     data = request.get_json()
     
     # Check if user already exists
